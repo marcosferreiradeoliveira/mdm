@@ -37,8 +37,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AdminBloc>(create: (context) => AdminBloc()),
         ChangeNotifierProvider<CommentBloc>(create: (context) => CommentBloc()),
-        ChangeNotifierProvider<NotificationBloc>(
-            create: (context) => NotificationBloc())
+        // ChangeNotifierProvider<NotificationBloc>(
+        //     create: (context) => NotificationBloc())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
