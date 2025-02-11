@@ -9,7 +9,7 @@ import 'package:admin/pages/notifications.dart';
 import 'package:admin/pages/places.dart';
 import 'package:admin/pages/settings.dart';
 import 'package:admin/pages/sign_in.dart';
-import 'package:admin/pages/states.dart';
+import 'package:admin/pages/exposicoes.dart';
 import 'package:admin/pages/upload_blog.dart';
 import 'package:admin/pages/upload_place.dart';
 import 'package:admin/pages/users.dart';
@@ -33,28 +33,22 @@ class _HomePageState extends State<HomePage> {
 
   final List<String> titles = [
     'Dashboard',
+    'Exposições',
     'Itens',
-    'Destaques',
     'Cadastrar Item',
     'Atualizações',
     'Nova Atualização',
-    'Exposições',
-    // 'Notifications',
-    // 'Users',
     'Admin',
     'Settings'
   ];
 
   final List icons = [
     LineIcons.pieChart,
+    LineIcons.mapPin,
     LineIcons.mapMarker,
-    LineIcons.bomb,
     LineIcons.arrowCircleUp,
     LineIcons.rocket,
     LineIcons.arrowCircleUp,
-    LineIcons.mapPin,
-    // LineIcons.bell,
-    // LineIcons.users,
     LineIcons.userSecret,
     LineIcons.key
   ];
@@ -108,16 +102,14 @@ class _HomePageState extends State<HomePage> {
                     tab(titles[5], icons[5]) as Tab,
                     tab(titles[6], icons[6]) as Tab,
                     tab(titles[7], icons[7]) as Tab,
-                    tab(titles[8], icons[8]) as Tab,
                   ],
                   contents: <Widget>[
                     DataInfoPage(),
+                    CoverWidget(widget: States()),
                     CoverWidget(widget: PlacesPage()),
-                    CoverWidget(widget: FeaturedPlaces()),
                     CoverWidget(widget: UploadPlace()),
                     CoverWidget(widget: BlogPage()),
                     CoverWidget(widget: UploadBlog()),
-                    CoverWidget(widget: States()),
                     CoverWidget(widget: AdminPage()),
                     CoverWidget(widget: Settings())
                   ],
@@ -203,7 +195,7 @@ class _HomePageState extends State<HomePage> {
                     ]),
                 child: TextButton.icon(
                   style: ButtonStyle(
-                      shape: MaterialStateProperty.resolveWith((states) =>
+                      shape: WidgetStateProperty.resolveWith((states) =>
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)))),
                   icon: Icon(
@@ -234,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: TextButton.icon(
                   style: ButtonStyle(
-                      shape: MaterialStateProperty.resolveWith((states) =>
+                      shape: WidgetStateProperty.resolveWith((states) =>
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)))),
                   icon: Icon(

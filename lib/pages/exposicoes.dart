@@ -26,7 +26,7 @@ class _CitiesPageState extends State<States> {
   List<DocumentSnapshot> _snap = [];
   List<StateModel> _data = [];
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final String collectionName = 'states';
+  final String collectionName = 'exposições';
   bool? _hasData;
 
   @override
@@ -74,7 +74,7 @@ class _CitiesPageState extends State<States> {
           _isLoading = false;
           _hasData = true;
         });
-        openToast(context, 'No more content available');
+        openToast(context, 'Nenhum conteúdo encontrado');
       }
     }
     return null;
@@ -113,7 +113,7 @@ class _CitiesPageState extends State<States> {
             contentPadding: EdgeInsets.all(50),
             elevation: 0,
             children: <Widget>[
-              Text('Delete?',
+              Text('Apagar?',
                   style: TextStyle(
                       color: Colors.black,
                       fontSize: 20,
@@ -121,7 +121,7 @@ class _CitiesPageState extends State<States> {
               SizedBox(
                 height: 10,
               ),
-              Text('Want to delete this item from the database?',
+              Text('Você quer apagar?',
                   style: TextStyle(
                       color: Colors.grey[900],
                       fontSize: 16,
@@ -135,7 +135,7 @@ class _CitiesPageState extends State<States> {
                   TextButton(
                     style: buttonStyle(Colors.redAccent),
                     child: Text(
-                      'Yes',
+                      'Sim',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -144,15 +144,15 @@ class _CitiesPageState extends State<States> {
                     onPressed: () async {
                       if (ab.userType == 'tester') {
                         Navigator.pop(context);
-                        openDialog(context, 'You are a Tester',
-                            'Only admin can delete contents');
+                        openDialog(context, 'Você é um testador',
+                            'Só admins podem deletar conteúdo');
                       } else {
                         await ab
                             .deleteContent(timestamp1, collectionName)
                             .then((value) => ab.getStates())
                             .then((value) => ab.decreaseCount('states_count'))
                             .then((value) =>
-                                openToast(context, 'Deleted Successfully'));
+                                openToast(context, 'Apagado com sucesso'));
                         refreshData();
                         Navigator.pop(context);
                       }
@@ -162,7 +162,7 @@ class _CitiesPageState extends State<States> {
                   TextButton(
                     style: buttonStyle(Colors.deepPurpleAccent),
                     child: Text(
-                      'No',
+                      'Não',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -224,7 +224,8 @@ class _CitiesPageState extends State<States> {
           child: _hasData == false
               ? EmptyPage(
                   icon: Icons.content_paste,
-                  message: 'No states found.\nUpload states first!')
+                  message:
+                      'Nenhuma exposição encontrada,\nCadastre exposições primeiro')
               : RefreshIndicator(
                   child: ListView.separated(
                     padding: EdgeInsets.only(top: 30, bottom: 20),
@@ -334,13 +335,14 @@ class _CitiesPageState extends State<States> {
       formKey.currentState!.save();
       if (ab.userType == 'tester') {
         Navigator.pop(context);
-        openDialog(context, 'You are a Tester', 'Only admin can add contents');
+        openDialog(context, 'Você é um testador',
+            'Só admins podem adicionar conteúdo');
       } else {
         await getTimestamp()
             .then((value) => addState())
             .then((value) =>
                 context.read<AdminBloc>().increaseCount('states_count'))
-            .then((value) => openToast(context, 'Added Successfully'))
+            .then((value) => openToast(context, 'Adiciobnado com sucesso'))
             .then((value) => ab.getStates());
         refreshData();
         Navigator.pop(context);
@@ -370,7 +372,7 @@ class _CitiesPageState extends State<States> {
             contentPadding: EdgeInsets.all(100),
             children: <Widget>[
               Text(
-                'Add State/Division to Database',
+                'Adicionar Exposição',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
               ),
               SizedBox(
@@ -381,11 +383,12 @@ class _CitiesPageState extends State<States> {
                   child: Column(
                     children: <Widget>[
                       TextFormField(
-                        decoration: inputDecoration(
-                            'Enter State Name', 'State Name', nameCtrl),
+                        decoration: inputDecoration('Ponha o Nome da Exposição',
+                            'Nome da Exposição', nameCtrl),
                         controller: nameCtrl,
                         validator: (value) {
-                          if (value!.isEmpty) return 'State name is empty';
+                          if (value!.isEmpty)
+                            return 'Nome da Exposição está vazio';
                           return null;
                         },
                       ),
@@ -393,11 +396,11 @@ class _CitiesPageState extends State<States> {
                         height: 20,
                       ),
                       TextFormField(
-                        decoration: inputDecoration('Enter Thumbnail Url',
-                            'Thumbnail Url', thumbnailCtrl),
+                        decoration: inputDecoration('Ponha a URL do Thumbnail',
+                            'Endereço do Thumbnail', thumbnailCtrl),
                         controller: thumbnailCtrl,
                         validator: (value) {
-                          if (value!.isEmpty) return 'Thumbnail url is empty';
+                          if (value!.isEmpty) return 'Thumbnail está vazio';
                           return null;
                         },
                       ),
@@ -423,7 +426,7 @@ class _CitiesPageState extends State<States> {
                           TextButton(
                             style: buttonStyle(Colors.deepPurpleAccent),
                             child: Text(
-                              'Add State/Division/City',
+                              'Adicionar Exposição',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -438,7 +441,7 @@ class _CitiesPageState extends State<States> {
                           TextButton(
                             style: buttonStyle(Colors.redAccent),
                             child: Text(
-                              'Cancel',
+                              'Cancelar',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -468,7 +471,7 @@ class _CitiesPageState extends State<States> {
     await ref.update({
       'name': nameCtrl1.text,
       'thumbnail': thumbnailCtrl1.text,
-      'descricao': descricaoCtrl1.text
+      'descricao': descricaoCtrl1.text,
     });
   }
 
@@ -478,10 +481,11 @@ class _CitiesPageState extends State<States> {
       formKey1.currentState!.save();
       if (ab.userType == 'tester') {
         Navigator.pop(context);
-        openDialog(context, 'You are a Tester', 'Only admin can update states');
+        openDialog(context, 'Você é um testador',
+            'Só admins podem atualizar exposições');
       } else {
         await _updateState(stateTimestamp)
-            .then((value) => openToast(context, 'Updated Successfully'))
+            .then((value) => openToast(context, 'Atualizado com sucesso'))
             .then((value) => ab.getStates());
         refreshData();
         Navigator.pop(context);
@@ -492,83 +496,98 @@ class _CitiesPageState extends State<States> {
   void openEditDialog(String oldStateName, String oldThumbnailUrl,
       String oldDescricao, String stateTimestamp) {
     showDialog(
-        context: context,
-        builder: (context) {
-          nameCtrl1.text = oldStateName;
-          thumbnailCtrl1.text = oldThumbnailUrl;
-          descricaoCtrl1.text = oldDescricao;
+      context: context,
+      builder: (context) {
+        nameCtrl1.text = oldStateName;
+        thumbnailCtrl1.text = oldThumbnailUrl;
+        descricaoCtrl1.text = oldDescricao;
 
-          return SimpleDialog(
-            contentPadding: EdgeInsets.all(100),
-            children: <Widget>[
-              Text(
-                'Edit/Update the State to Database',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
-              ),
-              SizedBox(
-                height: 50,
-              ),
-              Form(
-                  key: formKey1,
-                  child: Column(
-                    children: <Widget>[
-                      TextFormField(
-                        decoration: inputDecoration(
-                            'Enter State Name', 'State Name', nameCtrl1),
-                        controller: nameCtrl1,
-                        validator: (value) {
-                          if (value!.isEmpty) return 'Name is empty';
-                          return null;
-                        },
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      TextFormField(
-                        decoration: inputDecoration('Enter Thumbnail Url',
-                            'Thumbnail Url', thumbnailCtrl1),
-                        controller: thumbnailCtrl1,
-                        validator: (value) {
-                          if (value!.isEmpty) return 'Thumbnail url is empty';
-                          return null;
-                        },
-                      ),
-                      SizedBox(
-                        height: 50,
-                      ),
-                      Center(
-                          child: Row(
-                        children: <Widget>[
-                          TextButton(
-                            style: buttonStyle(Colors.purpleAccent),
-                            child: Text(
-                              'Update State',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            onPressed: () async =>
-                                _handleUpdateState(stateTimestamp),
+        return SimpleDialog(
+          contentPadding: EdgeInsets.all(100),
+          children: <Widget>[
+            Text(
+              'Edite Exposição',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900),
+            ),
+            SizedBox(
+              height: 50,
+            ),
+            Form(
+              key: formKey1,
+              child: Column(
+                children: <Widget>[
+                  TextFormField(
+                    decoration: inputDecoration('Ponha o nome da Exposição',
+                        'Nome da Exposição', nameCtrl1),
+                    controller: nameCtrl1,
+                    validator: (value) {
+                      if (value!.isEmpty) return 'Nome está vazio';
+                      return null;
+                    },
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  TextFormField(
+                    decoration: inputDecoration('Endereço do Thumbnail',
+                        'Endereço do Thumbnail', thumbnailCtrl1),
+                    controller: thumbnailCtrl1,
+                    validator: (value) {
+                      if (value!.isEmpty) return 'Thumbnail está vazio';
+                      return null;
+                    },
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  TextFormField(
+                    decoration: inputDecoration('Descrição da Exposição',
+                        'Descrição da Exposição', descricaoCtrl1),
+                    controller: descricaoCtrl1,
+                    validator: (value) {
+                      if (value!.isEmpty) return 'Descrição está vazia';
+                      return null;
+                    },
+                  ),
+                  SizedBox(
+                    height: 50,
+                  ),
+                  Center(
+                    child: Row(
+                      children: <Widget>[
+                        TextButton(
+                          style: buttonStyle(Colors.purpleAccent),
+                          child: Text(
+                            'Atualizar Exposição',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600),
                           ),
-                          SizedBox(width: 10),
-                          TextButton(
-                            style: buttonStyle(Colors.redAccent),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            onPressed: () => Navigator.pop(context),
+                          onPressed: () async =>
+                              _handleUpdateState(stateTimestamp),
+                        ),
+                        SizedBox(width: 10),
+                        TextButton(
+                          style: buttonStyle(Colors.redAccent),
+                          child: Text(
+                            'Cancelar',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600),
                           ),
-                        ],
-                      ))
-                    ],
-                  ))
-            ],
-          );
-        });
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
