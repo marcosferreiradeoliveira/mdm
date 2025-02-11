@@ -29,6 +29,7 @@ dependencies:
   html_unescape: ^2.0.0
   googleapis_auth: ^1.6.0
   change_app_package_name: ^1.4.0
+  flutter_dotenv: ^5.0.2
 
   
 
