@@ -30,6 +30,11 @@ dependencies:
   googleapis_auth: ^1.6.0
   change_app_package_name: ^1.4.0
   flutter_dotenv: ^5.0.2
+  firebase_storage: ^12.4.2
+  image_picker: ^1.1.2
+
+
+  
   
 
   

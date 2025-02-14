@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:admin/blocs/admin_bloc.dart';
 import 'package:admin/utils/dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -14,19 +17,23 @@ class UploadItem extends StatefulWidget {
 
 class _UploadItemState extends State<UploadItem> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirebaseStorage storage = FirebaseStorage.instance;
 
   var formKey = GlobalKey<FormState>();
   var scaffoldKey = GlobalKey<ScaffoldState>();
   final String collectionName = 'Item';
 
   var tituloCtrl = TextEditingController();
-  var imagemCtrl = TextEditingController();
   var descricaoCtrl = TextEditingController();
+  var librasCtrl = TextEditingController();
+  var audiodescricaoCtrl = TextEditingController();
 
   String? _timestamp;
   String? _date;
+  String? _imageUrl;
   List<DropdownMenuItem<String>> exposicoesDropdownItems = [];
   String? selectedExposicaoId;
+  File? _imageFile;
 
   @override
   void initState() {
@@ -50,9 +57,12 @@ class _UploadItemState extends State<UploadItem> {
 
   clearFields() {
     tituloCtrl.clear();
-    imagemCtrl.clear();
     descricaoCtrl.clear();
+    librasCtrl.clear();
+    audiodescricaoCtrl.clear();
     selectedExposicaoId = null;
+    _imageFile = null;
+    _imageUrl = null;
     FocusScope.of(context).unfocus();
   }
 
@@ -69,6 +79,9 @@ class _UploadItemState extends State<UploadItem> {
       } else {
         setState(() => uploadStarted = true);
         await getDate().then((_) async {
+          if (_imageFile != null) {
+            await uploadImageToStorage();
+          }
           await saveToDatabase().then(
               (value) => context.read<AdminBloc>().increaseCount('item_count'));
           setState(() => uploadStarted = false);
@@ -89,6 +102,12 @@ class _UploadItemState extends State<UploadItem> {
     });
   }
 
+  Future uploadImageToStorage() async {
+    final ref = storage.ref().child('items').child('$_timestamp.jpg');
+    await ref.putFile(_imageFile!);
+    _imageUrl = await ref.getDownloadURL();
+  }
+
   Future saveToDatabase() async {
     final DocumentReference ref =
         firestore.collection(collectionName).doc(_timestamp);
@@ -96,13 +115,25 @@ class _UploadItemState extends State<UploadItem> {
     var _itemData = {
       'exposicaoId': selectedExposicaoId,
       'titulo': tituloCtrl.text,
-      'imagem': imagemCtrl.text,
+      'imagem': _imageUrl,
       'descricao': descricaoCtrl.text,
+      'url_libras': librasCtrl.text,
+      'url_audiodescricao': audiodescricaoCtrl.text,
       'timestamp': _timestamp,
       'date': _date,
     };
 
     await ref.set(_itemData);
+  }
+
+  Future pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedFile != null) {
+        _imageFile = File(pickedFile.path);
+      }
+    });
   }
 
   @override
@@ -141,14 +172,19 @@ class _UploadItemState extends State<UploadItem> {
               SizedBox(
                 height: 20,
               ),
-              TextFormField(
-                decoration:
-                    inputDecoration('URL da Imagem', 'Imagem', imagemCtrl),
-                controller: imagemCtrl,
-                validator: (value) {
-                  if (value!.isEmpty) return 'Campo está vazio';
-                  return null;
-                },
+              GestureDetector(
+                onTap: pickImage,
+                child: Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    border: Border.all(color: Colors.grey[300]!),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: _imageFile == null
+                      ? Center(child: Text('Selecionar Imagem'))
+                      : Image.file(_imageFile!, fit: BoxFit.cover),
+                ),
               ),
               SizedBox(
                 height: 20,
@@ -179,6 +215,28 @@ class _UploadItemState extends State<UploadItem> {
                 controller: descricaoCtrl,
                 validator: (value) {
                   if (value!.isEmpty) return 'Campo está vazio';
+                  return null;
+                },
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                decoration:
+                    inputDecoration('URL de Libras', 'Libras', librasCtrl),
+                controller: librasCtrl,
+                validator: (value) {
+                  return null;
+                },
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                decoration: inputDecoration('URL de Audiodescrição',
+                    'Audiodescrição', audiodescricaoCtrl),
+                controller: audiodescricaoCtrl,
+                validator: (value) {
                   return null;
                 },
               ),

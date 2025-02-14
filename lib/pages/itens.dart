@@ -210,6 +210,10 @@ class _ItensPageState extends State<ItensPage> {
     TextEditingController descricaoCtrl =
         TextEditingController(text: item.descricao);
     TextEditingController imagemCtrl = TextEditingController(text: item.imagem);
+    TextEditingController librasCtrl =
+        TextEditingController(text: item.urlLibras);
+    TextEditingController audiodescricaoCtrl =
+        TextEditingController(text: item.urlAudiodescricao);
     String? exposicaoId = item.exposicaoId;
 
     showDialog(
@@ -239,6 +243,15 @@ class _ItensPageState extends State<ItensPage> {
                       TextFormField(
                         controller: imagemCtrl,
                         decoration: InputDecoration(labelText: 'URL da Imagem'),
+                      ),
+                      TextFormField(
+                        controller: librasCtrl,
+                        decoration: InputDecoration(labelText: 'URL de Libras'),
+                      ),
+                      TextFormField(
+                        controller: audiodescricaoCtrl,
+                        decoration:
+                            InputDecoration(labelText: 'URL de Audiodescrição'),
                       ),
                       StreamBuilder<QuerySnapshot>(
                         stream: firestore.collection('exposições').snapshots(),
@@ -286,6 +299,8 @@ class _ItensPageState extends State<ItensPage> {
                                 'descricao': descricaoCtrl.text,
                                 'imagem': imagemCtrl.text,
                                 'exposicaoId': exposicaoId,
+                                'url_libras': librasCtrl.text,
+                                'url_audiodescricao': audiodescricaoCtrl.text,
                               });
                               refreshData();
                               Navigator.pop(context);
@@ -420,6 +435,20 @@ class _ItensPageState extends State<ItensPage> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12),
                   ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  if (d.urlLibras != null && d.urlLibras!.isNotEmpty)
+                    Text(
+                      'URL de Libras: ${d.urlLibras}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[800]),
+                    ),
+                  if (d.urlAudiodescricao != null &&
+                      d.urlAudiodescricao!.isNotEmpty)
+                    Text(
+                      'URL de Audiodescrição: ${d.urlAudiodescricao}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[800]),
+                    ),
                   SizedBox(
                     height: 10,
                   ),

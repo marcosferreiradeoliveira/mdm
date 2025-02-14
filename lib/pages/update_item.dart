@@ -25,12 +25,16 @@ class _UpdateItemState extends State<UpdateItem> {
   var tituloCtrl = TextEditingController();
   var imagemCtrl = TextEditingController();
   var descricaoCtrl = TextEditingController();
+  var librasCtrl = TextEditingController();
+  var audiodescricaoCtrl = TextEditingController();
 
   clearFields() {
     exposicaoCtrl.clear();
     tituloCtrl.clear();
     imagemCtrl.clear();
     descricaoCtrl.clear();
+    librasCtrl.clear();
+    audiodescricaoCtrl.clear();
     FocusScope.of(context).unfocus();
   }
 
@@ -58,6 +62,8 @@ class _UpdateItemState extends State<UpdateItem> {
       'titulo': tituloCtrl.text,
       'imagem': imagemCtrl.text,
       'descricao': descricaoCtrl.text,
+      'url_libras': librasCtrl.text,
+      'url_audiodescricao': audiodescricaoCtrl.text,
     };
 
     await ref.update(_itemData);
@@ -68,6 +74,8 @@ class _UpdateItemState extends State<UpdateItem> {
     tituloCtrl.text = widget.itemData.titulo!;
     imagemCtrl.text = widget.itemData.imagem!;
     descricaoCtrl.text = widget.itemData.descricao!;
+    librasCtrl.text = widget.itemData.urlLibras ?? '';
+    audiodescricaoCtrl.text = widget.itemData.urlAudiodescricao ?? '';
   }
 
   @override
@@ -161,6 +169,28 @@ class _UpdateItemState extends State<UpdateItem> {
                   controller: descricaoCtrl,
                   validator: (value) {
                     if (value!.isEmpty) return 'Campo vazio';
+                    return null;
+                  },
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  decoration:
+                      inputDecoration('URL de Libras', 'Libras', librasCtrl),
+                  controller: librasCtrl,
+                  validator: (value) {
+                    return null;
+                  },
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  decoration: inputDecoration('URL de Audiodescrição',
+                      'Audiodescrição', audiodescricaoCtrl),
+                  controller: audiodescricaoCtrl,
+                  validator: (value) {
                     return null;
                   },
                 ),

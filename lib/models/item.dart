@@ -6,6 +6,8 @@ class Item {
   String? imagem;
   String? descricao;
   String? timestamp;
+  String? urlLibras;
+  String? urlAudiodescricao;
 
   Item({
     this.exposicaoId,
@@ -13,6 +15,8 @@ class Item {
     this.imagem,
     this.descricao,
     this.timestamp,
+    this.urlLibras,
+    this.urlAudiodescricao,
   });
 
   factory Item.fromFirestore(DocumentSnapshot doc) {
@@ -23,6 +27,8 @@ class Item {
       imagem: data['imagem'] ?? '',
       descricao: data['descricao'] ?? '',
       timestamp: data['timestamp'] ?? '',
+      urlLibras: data['url_libras'] ?? '',
+      urlAudiodescricao: data['url_audiodescricao'] ?? '',
     );
   }
 }
