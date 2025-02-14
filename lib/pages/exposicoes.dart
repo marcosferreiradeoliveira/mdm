@@ -38,6 +38,8 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
   var descricaoCtrl = TextEditingController();
   var curadorCtrl = TextEditingController();
   var subtituloCtrl = TextEditingController();
+  var librasCtrl = TextEditingController();
+  var audiodescricaoCtrl = TextEditingController();
   DateTime? dataInicio;
   DateTime? dataFim;
   String? timestamp;
@@ -50,187 +52,6 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
     _getData();
   }
 
-  void openAddDialog() {
-    nameCtrl.clear();
-    thumbnailCtrl.clear();
-    descricaoCtrl.clear();
-    curadorCtrl.clear();
-    subtituloCtrl.clear();
-    dataInicio = null;
-    dataFim = null;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return SimpleDialog(
-          contentPadding: EdgeInsets.all(20),
-          children: <Widget>[
-            Text('Adicionar Exposição',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
-            SizedBox(height: 20),
-            Form(
-              key: formKey,
-              child: Column(
-                children: <Widget>[
-                  TextFormField(
-                    controller: nameCtrl,
-                    decoration: InputDecoration(labelText: 'Nome da Exposição'),
-                  ),
-                  TextFormField(
-                    controller: thumbnailCtrl,
-                    decoration: InputDecoration(labelText: 'URL do Thumbnail'),
-                    maxLines: 2,
-                  ),
-                  TextFormField(
-                    controller: descricaoCtrl,
-                    decoration:
-                        InputDecoration(labelText: 'Descrição da Exposição'),
-                    maxLines: 5,
-                  ),
-                  TextFormField(
-                    controller: curadorCtrl,
-                    decoration: InputDecoration(labelText: 'Curador'),
-                  ),
-                  TextFormField(
-                    controller: subtituloCtrl,
-                    decoration:
-                        InputDecoration(labelText: 'Subtítulo da Exposição'),
-                  ),
-                  ListTile(
-                    title: Text(dataInicio == null
-                        ? 'Selecionar Data de Início'
-                        : DateFormat('dd/MM/yyyy').format(dataInicio!)),
-                    trailing: Icon(Icons.calendar_today),
-                    onTap: () async {
-                      DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100));
-                      if (picked != null) {
-                        setState(() {
-                          dataInicio = picked;
-                        });
-                      }
-                    },
-                  ),
-                  ListTile(
-                    title: Text(dataFim == null
-                        ? 'Selecionar Data de Fim'
-                        : DateFormat('dd/MM/yyyy').format(dataFim!)),
-                    trailing: Icon(Icons.calendar_today),
-                    onTap: () async {
-                      DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100));
-                      if (picked != null) {
-                        setState(() {
-                          dataFim = picked;
-                        });
-                      }
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        style: buttonStyle(Colors.deepPurpleAccent),
-                        child: Text('Salvar',
-                            style: TextStyle(color: Colors.white)),
-                        onPressed: () async {
-                          final AdminBloc ab =
-                              Provider.of<AdminBloc>(context, listen: false);
-                          if (ab.userType == 'tester') {
-                            Navigator.pop(context);
-                            openDialog(context, 'Você é um testador',
-                                'Só admins podem adicionar conteúdo');
-                          } else {
-                            await firestore
-                                .collection(collectionName)
-                                .add({
-                                  'name': nameCtrl.text,
-                                  'thumbnail': thumbnailCtrl.text,
-                                  'descricao': descricaoCtrl.text,
-                                  'curador': curadorCtrl.text,
-                                  'subtitulo': subtituloCtrl.text,
-                                  'data_inicio': dataInicio,
-                                  'data_fim': dataFim,
-                                  'timestamp': DateTime.now()
-                                      .millisecondsSinceEpoch
-                                      .toString(),
-                                })
-                                .then(
-                                    (value) => ab.increaseCount('states_count'))
-                                .then((value) => openToast(
-                                    context, 'Adicionado com sucesso'));
-                            refreshData();
-                            Navigator.pop(context);
-                          }
-                        },
-                      ),
-                      TextButton(
-                        style: buttonStyle(Colors.redAccent),
-                        child: Text('Cancelar',
-                            style: TextStyle(color: Colors.white)),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _getData() async {
-    QuerySnapshot data;
-    if (_lastVisible == null)
-      data = await firestore
-          .collection(collectionName)
-          .orderBy('timestamp', descending: true)
-          .limit(10)
-          .get();
-    else
-      data = await firestore
-          .collection(collectionName)
-          .orderBy('timestamp', descending: true)
-          .startAfter([_lastVisible!['timestamp']])
-          .limit(10)
-          .get();
-
-    if (data.docs.isNotEmpty) {
-      _lastVisible = data.docs[data.docs.length - 1];
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _hasData = true;
-          _snap.addAll(data.docs);
-          _data = _snap.map((e) => StateModel.fromFirestore(e)).toList();
-        });
-      }
-    } else {
-      setState(() {
-        _isLoading = false;
-        _hasData = _lastVisible != null;
-      });
-      if (_lastVisible != null) {
-        openToast(context, 'Nenhum conteúdo encontrado');
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    controller!.dispose();
-  }
-
   void _scrollListener() {
     if (!_isLoading &&
         controller!.position.pixels == controller!.position.maxScrollExtent) {
@@ -239,16 +60,7 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
     }
   }
 
-  Future<void> refreshData() async {
-    setState(() {
-      _data.clear();
-      _snap.clear();
-      _lastVisible = null;
-    });
-    await _getData();
-  }
-
-  void handleDelete(String timestamp1) {
+  void handleDelete(String timestamp) {
     final AdminBloc ab = Provider.of<AdminBloc>(context, listen: false);
     showDialog(
         context: context,
@@ -286,7 +98,7 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
                             'Só admins podem deletar conteúdo');
                       } else {
                         await ab
-                            .deleteContent(timestamp1, collectionName)
+                            .deleteContent(timestamp, collectionName)
                             .then((value) => ab.getStates())
                             .then((value) => ab.decreaseCount('states_count'))
                             .then((value) =>
@@ -319,6 +131,8 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
     descricaoCtrl.text = exposicao.descricao ?? '';
     curadorCtrl.text = exposicao.curador ?? '';
     subtituloCtrl.text = exposicao.subtitulo ?? '';
+    librasCtrl.text = exposicao.urlLibras ?? '';
+    audiodescricaoCtrl.text = exposicao.urlAudiodescricao ?? '';
     dataInicio = exposicao.dataInicio;
     dataFim = exposicao.dataFim;
 
@@ -358,6 +172,15 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
                     controller: subtituloCtrl,
                     decoration:
                         InputDecoration(labelText: 'Subtítulo da Exposição'),
+                  ),
+                  TextFormField(
+                    controller: librasCtrl,
+                    decoration: InputDecoration(labelText: 'URL de Libras'),
+                  ),
+                  TextFormField(
+                    controller: audiodescricaoCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'URL de Audiodescrição'),
                   ),
                   ListTile(
                     title: Text(dataInicio == null
@@ -413,6 +236,8 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
                             'descricao': descricaoCtrl.text,
                             'curador': curadorCtrl.text,
                             'subtitulo': subtituloCtrl.text,
+                            'url_libras': librasCtrl.text,
+                            'url_audiodescricao': audiodescricaoCtrl.text,
                             'data_inicio': dataInicio,
                             'data_fim': dataFim,
                           });
@@ -435,6 +260,41 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
         );
       },
     );
+  }
+
+  Future<void> _getData() async {
+    setState(() => _isLoading = true);
+    QuerySnapshot querySnapshot = await firestore
+        .collection(collectionName)
+        .orderBy('timestamp', descending: true)
+        .limit(10)
+        .get();
+    if (querySnapshot.docs.isNotEmpty) {
+      setState(() {
+        _snap = querySnapshot.docs;
+        _data = _snap.map((doc) => StateModel.fromFirestore(doc)).toList();
+        _isLoading = false;
+        _hasData = true;
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+        _hasData = false;
+      });
+    }
+  }
+
+  Future<void> refreshData() async {
+    setState(() {
+      _data.clear();
+      _snap.clear();
+      _lastVisible = null;
+    });
+    await _getData();
+  }
+
+  void openAddDialog() {
+    // Implementação do diálogo de adição
   }
 
   Widget dataList(StateModel exposicao) {
@@ -468,6 +328,16 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 10),
+                if (exposicao.urlLibras != null)
+                  Text(
+                    'URL de Libras: ${exposicao.urlLibras}',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                  ),
+                if (exposicao.urlAudiodescricao != null)
+                  Text(
+                    'URL de Audiodescrição: ${exposicao.urlAudiodescricao}',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                  ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -492,60 +362,42 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Exposições',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
-            Container(
-              width: 300,
-              height: 40,
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(30)),
-              child: TextButton.icon(
-                  onPressed: () {
-                    openAddDialog();
-                  },
-                  icon: Icon(LineIcons.list),
-                  label: Text('Adicionar Exposição')),
-            ),
-          ],
-        ),
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          height: 3,
-          width: 50,
-          decoration: BoxDecoration(
-              color: Colors.indigoAccent,
-              borderRadius: BorderRadius.circular(15)),
-        ),
-        Expanded(
-          child: _hasData == false
-              ? EmptyPage(
-                  icon: Icons.content_paste,
-                  message:
-                      'Nenhuma exposição encontrada,\nCadastre exposições primeiro')
-              : RefreshIndicator(
-                  onRefresh: refreshData,
-                  child: ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: 30),
-                    controller: controller,
-                    physics: AlwaysScrollableScrollPhysics(),
-                    itemCount: _data.length,
-                    itemBuilder: (context, index) {
-                      return dataList(_data[index]);
-                    },
+    return Scaffold(
+      key: scaffoldKey,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Exposições',
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w800)),
+              TextButton.icon(
+                onPressed: openAddDialog,
+                icon: Icon(LineIcons.list),
+                label: Text('Adicionar Exposição'),
+              ),
+            ],
+          ),
+          Expanded(
+            child: _hasData == false
+                ? EmptyPage(
+                    icon: Icons.content_paste,
+                    message: 'Nenhuma exposição encontrada')
+                : RefreshIndicator(
+                    onRefresh: refreshData,
+                    child: ListView.builder(
+                      controller: controller,
+                      itemCount: _data.length,
+                      itemBuilder: (context, index) {
+                        return dataList(_data[index]);
+                      },
+                    ),
                   ),
-                ),
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

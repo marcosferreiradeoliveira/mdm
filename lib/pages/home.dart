@@ -2,13 +2,12 @@ import 'package:admin/blocs/admin_bloc.dart';
 import 'package:admin/config/config.dart';
 import 'package:admin/customized_packages/vertical_tabs.dart';
 import 'package:admin/pages/admin.dart';
-import 'package:admin/pages/blogs.dart';
+import 'package:admin/pages/atualizacoes.dart';
 import 'package:admin/pages/data_info.dart';
 import 'package:admin/pages/itens.dart';
-import 'package:admin/pages/settings.dart';
 import 'package:admin/pages/sign_in.dart';
 import 'package:admin/pages/exposicoes.dart';
-import 'package:admin/pages/upload_blog.dart';
+import 'package:admin/pages/upload_atualizacao.dart';
 import 'package:admin/pages/upload_item.dart';
 import 'package:admin/utils/next_screen.dart';
 import 'package:admin/widgets/cover_widget.dart';
@@ -35,8 +34,7 @@ class _HomePageState extends State<HomePage> {
     'Cadastrar Item',
     'Atualizações',
     'Nova Atualização',
-    'Admin',
-    'Settings'
+    'Admin'
   ];
 
   final List icons = [
@@ -46,8 +44,7 @@ class _HomePageState extends State<HomePage> {
     LineIcons.arrowCircleUp,
     LineIcons.rocket,
     LineIcons.arrowCircleUp,
-    LineIcons.userSecret,
-    LineIcons.key
+    LineIcons.userSecret
   ];
 
   Future handleLogOut() async {
@@ -98,7 +95,6 @@ class _HomePageState extends State<HomePage> {
                     tab(titles[4], icons[4]) as Tab,
                     tab(titles[5], icons[5]) as Tab,
                     tab(titles[6], icons[6]) as Tab,
-                    tab(titles[7], icons[7]) as Tab,
                   ],
                   contents: <Widget>[
                     DataInfoPage(),
@@ -111,7 +107,6 @@ class _HomePageState extends State<HomePage> {
                     CoverWidget(widget: BlogPage()),
                     CoverWidget(widget: UploadBlog()),
                     CoverWidget(widget: AdminPage()),
-                    CoverWidget(widget: Settings())
                   ],
                 ),
               ),
@@ -173,7 +168,7 @@ class _HomePageState extends State<HomePage> {
                       text: Config().appName,
                       children: <TextSpan>[
                     TextSpan(
-                        text: ' - Admin Panel',
+                        text: ' - Painel Admin',
                         style: GoogleFonts.poppins(
                             fontSize: 17,
                             fontWeight: FontWeight.w400,
@@ -195,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                     ]),
                 child: TextButton.icon(
                   style: ButtonStyle(
-                      shape: WidgetStateProperty.resolveWith((states) =>
+                      shape: MaterialStateProperty.resolveWith((states) =>
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)))),
                   icon: Icon(
@@ -204,7 +199,7 @@ class _HomePageState extends State<HomePage> {
                     size: 20,
                   ),
                   label: Text(
-                    'Logout',
+                    'Sair',
                     style: TextStyle(
                         fontWeight: FontWeight.w400,
                         color: Colors.white,
@@ -226,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: TextButton.icon(
                   style: ButtonStyle(
-                      shape: WidgetStateProperty.resolveWith((states) =>
+                      shape: MaterialStateProperty.resolveWith((states) =>
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)))),
                   icon: Icon(
@@ -235,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                     size: 20,
                   ),
                   label: Text(
-                    'Signed as ${ab.userType}',
+                    'Logado como ${ab.userType}',
                     style: TextStyle(
                         fontWeight: FontWeight.w400,
                         color: Colors.deepPurpleAccent,

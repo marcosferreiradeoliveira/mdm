@@ -205,86 +205,6 @@ class _ItensPageState extends State<ItensPage> {
         });
   }
 
-  openFeaturedDialog(String? timestamp) {
-    final AdminBloc ab = Provider.of<AdminBloc>(context, listen: false);
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-            contentPadding: EdgeInsets.all(50),
-            elevation: 0,
-            children: <Widget>[
-              Text('Adicionar aos Destaques',
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900)),
-              SizedBox(
-                height: 10,
-              ),
-              Text('Você quer adicionar este item à lista de destaques?',
-                  style: TextStyle(
-                      color: Colors.grey[900],
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700)),
-              SizedBox(
-                height: 30,
-              ),
-              Center(
-                  child: Row(
-                children: <Widget>[
-                  TextButton(
-                    style: buttonStyle(Colors.redAccent),
-                    child: Text(
-                      'Sim',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600),
-                    ),
-                    onPressed: () async {
-                      if (ab.userType == 'tester') {
-                        Navigator.pop(context);
-                        openDialog(context, 'Você é um testador',
-                            'Só admins podem fazer isso');
-                      } else {
-                        await context
-                            .read<AdminBloc>()
-                            .getFeaturedList()
-                            .then((List featuredList) async {
-                          if (featuredList.length <= 10) {
-                            await context
-                                .read<AdminBloc>()
-                                .addToFeaturedList(context, timestamp);
-                            Navigator.pop(context);
-                          } else {
-                            Navigator.pop(context);
-                            openDialog(
-                                context,
-                                'Itens em destaque são maiores que 10 conteúdos!',
-                                'O limite de itens em destaque é 10. Por favor, remova alguns itens dos conteúdos em destaque e tente novamente');
-                          }
-                        });
-                      }
-                    },
-                  ),
-                  SizedBox(width: 10),
-                  TextButton(
-                    style: buttonStyle(Colors.deepPurpleAccent),
-                    child: Text('Não',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600)),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ))
-            ],
-          );
-        });
-  }
-
   void openEditDialog(Item item) {
     TextEditingController tituloCtrl = TextEditingController(text: item.titulo);
     TextEditingController descricaoCtrl =
@@ -531,20 +451,6 @@ class _ItensPageState extends State<ItensPage> {
                         onTap: () {
                           handleDelete(d.timestamp);
                         },
-                      ),
-                      SizedBox(width: 10),
-                      Container(
-                        height: 35,
-                        padding: EdgeInsets.only(
-                            left: 15, right: 15, top: 5, bottom: 5),
-                        decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            border: Border.all(color: Colors.grey[300]!),
-                            borderRadius: BorderRadius.circular(30)),
-                        child: TextButton.icon(
-                            onPressed: () => openFeaturedDialog(d.timestamp),
-                            icon: Icon(LineIcons.plus),
-                            label: Text('Adicionar aos Destaques')),
                       ),
                     ],
                   ),

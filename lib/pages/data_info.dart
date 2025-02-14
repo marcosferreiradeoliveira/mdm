@@ -39,34 +39,23 @@ class _DataInfoPageState extends State<DataInfoPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // FutureBuilder(
-              //   future: users,
-              //   builder: (BuildContext context, AsyncSnapshot snap) {
-              //     if (!snap.hasData) return card('TOTAL USERS', 0);
-              //     if (snap.hasError) return card('TOTAL USERS', 0);
-              //     return card('TOTAL USERS', snap.data);
-              //   },
-              // ),
-              // SizedBox(
-              //   width: 20,
-              // ),
               FutureBuilder(
-                future: places,
+                future: states,
                 builder: (BuildContext context, AsyncSnapshot snap) {
-                  if (!snap.hasData) return card('Itens', 0);
-                  if (snap.hasError) return card('Itens', 0);
-                  return card('Itens', snap.data);
+                  if (!snap.hasData) return card('Exposições', 0);
+                  if (snap.hasError) return card('Exposições', 0);
+                  return card('Exposições', snap.data);
                 },
               ),
               SizedBox(
                 width: 20,
               ),
               FutureBuilder(
-                future: blogs,
+                future: places,
                 builder: (BuildContext context, AsyncSnapshot snap) {
-                  if (!snap.hasData) return card('Atualizações', 0);
-                  if (snap.hasError) return card('Atualizações', 0);
-                  return card('Atualizações', snap.data);
+                  if (!snap.hasData) return card('Itens', 0);
+                  if (snap.hasError) return card('Itens', 0);
+                  return card('Itens', snap.data);
                 },
               ),
             ],
@@ -77,37 +66,12 @@ class _DataInfoPageState extends State<DataInfoPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // FutureBuilder(
-              //   future: notifications,
-              //   builder: (BuildContext context, AsyncSnapshot snap) {
-              //     if (!snap.hasData) return card('TOTAL NOTIFICATIONS', 0);
-              //     if (snap.hasError) return card('TOTAL NOTIFICATIONS', 0);
-              //     return card('TOTAL NOTIFICATIONS', snap.data);
-              //   },
-              // ),
-              // SizedBox(
-              //   width: 20,
-              // ),
-              StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('featured')
-                    .doc('featured_list')
-                    .snapshots(),
-                builder: (context, AsyncSnapshot snap) {
-                  if (!snap.hasData) return card('Destaques', 0);
-                  if (snap.hasError) return card('Destaques', 0);
-                  return card('Destaques', snap.data['places'].length);
-                },
-              ),
-              SizedBox(
-                width: 20,
-              ),
               FutureBuilder(
-                future: states,
+                future: blogs,
                 builder: (BuildContext context, AsyncSnapshot snap) {
-                  if (!snap.hasData) return card('Exposições', 0);
-                  if (snap.hasError) return card('Exposições', 0);
-                  return card('Exposições', snap.data);
+                  if (!snap.hasData) return card('Atualizações', 0);
+                  if (snap.hasError) return card('Atualizações', 0);
+                  return card('Atualizações', snap.data);
                 },
               ),
             ],

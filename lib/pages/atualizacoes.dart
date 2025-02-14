@@ -1,7 +1,7 @@
 import 'package:admin/blocs/admin_bloc.dart';
 import 'package:admin/models/blog.dart';
 import 'package:admin/pages/comments.dart';
-import 'package:admin/pages/update_blog.dart';
+import 'package:admin/pages/update_atualizacao.dart';
 import 'package:admin/utils/cached_image.dart';
 import 'package:admin/utils/dialog.dart';
 import 'package:admin/utils/empty.dart';
@@ -193,7 +193,14 @@ class _BlogPageState extends State<BlogPage> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
-        title: Text('Atualizações'),
+        title: Text(
+          'Atualizações',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
       body: _hasData == false
           ? EmptyPage(
@@ -265,20 +272,6 @@ class _BlogPageState extends State<BlogPage> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(
-                    height: 5,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Icon(Icons.access_time, size: 15, color: Colors.grey),
-                      SizedBox(width: 3),
-                      Text(
-                        _formatDate(d.timestamp!),
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
                     height: 10,
                   ),
                   Row(
@@ -333,15 +326,5 @@ class _BlogPageState extends State<BlogPage> {
         ],
       ),
     );
-  }
-
-  String _formatDate(String timestamp) {
-    try {
-      return DateFormat('dd/MM/yyyy', 'pt_BR')
-          .format(DateTime.parse(timestamp));
-    } catch (e) {
-      print('Erro ao formatar o timestamp: $e');
-      return 'Data inválida';
-    }
   }
 }
