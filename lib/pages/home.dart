@@ -4,12 +4,12 @@ import 'package:admin/customized_packages/vertical_tabs.dart';
 import 'package:admin/pages/admin.dart';
 import 'package:admin/pages/blogs.dart';
 import 'package:admin/pages/data_info.dart';
-import 'package:admin/pages/places.dart';
+import 'package:admin/pages/itens.dart';
 import 'package:admin/pages/settings.dart';
 import 'package:admin/pages/sign_in.dart';
 import 'package:admin/pages/exposicoes.dart';
 import 'package:admin/pages/upload_blog.dart';
-import 'package:admin/pages/upload_place.dart';
+import 'package:admin/pages/upload_item.dart';
 import 'package:admin/utils/next_screen.dart';
 import 'package:admin/widgets/cover_widget.dart';
 import 'package:flutter/material.dart';
@@ -102,9 +102,12 @@ class _HomePageState extends State<HomePage> {
                   ],
                   contents: <Widget>[
                     DataInfoPage(),
-                    CoverWidget(widget: States()),
-                    CoverWidget(widget: PlacesPage()),
-                    CoverWidget(widget: UploadPlace()),
+                    CoverWidget(widget: ExposicoesPage()),
+                    CoverWidget(
+                        widget: ItensPage(
+                            exposicaoId:
+                                'some_id')), // Passe o ID da exposição aqui
+                    CoverWidget(widget: UploadItem()),
                     CoverWidget(widget: BlogPage()),
                     CoverWidget(widget: UploadBlog()),
                     CoverWidget(widget: AdminPage()),
