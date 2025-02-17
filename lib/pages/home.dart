@@ -190,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                     ]),
                 child: TextButton.icon(
                   style: ButtonStyle(
-                      shape: MaterialStateProperty.resolveWith((states) =>
+                      shape: WidgetStateProperty.resolveWith((states) =>
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)))),
                   icon: Icon(
@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: TextButton.icon(
                   style: ButtonStyle(
-                      shape: MaterialStateProperty.resolveWith((states) =>
+                      shape: WidgetStateProperty.resolveWith((states) =>
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20)))),
                   icon: Icon(

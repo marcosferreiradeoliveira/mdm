@@ -40,6 +40,9 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
   var subtituloCtrl = TextEditingController();
   var librasCtrl = TextEditingController();
   var audiodescricaoCtrl = TextEditingController();
+  var nameEnCtrl = TextEditingController();
+  var descricaoEnCtrl = TextEditingController();
+  var subtituloEnCtrl = TextEditingController();
   DateTime? dataInicio;
   DateTime? dataFim;
   String? timestamp;
@@ -133,6 +136,9 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
     subtituloCtrl.text = exposicao.subtitulo ?? '';
     librasCtrl.text = exposicao.urlLibras ?? '';
     audiodescricaoCtrl.text = exposicao.urlAudiodescricao ?? '';
+    nameEnCtrl.text = exposicao.nameEn ?? '';
+    descricaoEnCtrl.text = exposicao.descricaoEn ?? '';
+    subtituloEnCtrl.text = exposicao.subtituloEn ?? '';
     dataInicio = exposicao.dataInicio;
     dataFim = exposicao.dataFim;
 
@@ -181,6 +187,21 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
                     controller: audiodescricaoCtrl,
                     decoration:
                         InputDecoration(labelText: 'URL de Audiodescrição'),
+                  ),
+                  TextFormField(
+                    controller: nameEnCtrl,
+                    decoration: InputDecoration(labelText: 'Título em Inglês'),
+                  ),
+                  TextFormField(
+                    controller: descricaoEnCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'Descrição em Inglês'),
+                    maxLines: 5,
+                  ),
+                  TextFormField(
+                    controller: subtituloEnCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'Subtítulo em Inglês'),
                   ),
                   ListTile(
                     title: Text(dataInicio == null
@@ -238,8 +259,169 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
                             'subtitulo': subtituloCtrl.text,
                             'url_libras': librasCtrl.text,
                             'url_audiodescricao': audiodescricaoCtrl.text,
+                            'titulo_en': nameEnCtrl.text,
+                            'descricao_en': descricaoEnCtrl.text,
+                            'subtitulo_en': subtituloEnCtrl.text,
                             'data_inicio': dataInicio,
                             'data_fim': dataFim,
+                          });
+                          refreshData();
+                          Navigator.pop(context);
+                        },
+                      ),
+                      TextButton(
+                        style: buttonStyle(Colors.redAccent),
+                        child: Text('Cancelar',
+                            style: TextStyle(color: Colors.white)),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void openAddDialog() {
+    nameCtrl.clear();
+    thumbnailCtrl.clear();
+    descricaoCtrl.clear();
+    curadorCtrl.clear();
+    subtituloCtrl.clear();
+    librasCtrl.clear();
+    audiodescricaoCtrl.clear();
+    nameEnCtrl.clear();
+    descricaoEnCtrl.clear();
+    subtituloEnCtrl.clear();
+    dataInicio = null;
+    dataFim = null;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          contentPadding: EdgeInsets.all(20),
+          children: <Widget>[
+            Text('Adicionar Exposição',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900)),
+            SizedBox(height: 20),
+            Form(
+              key: formKey,
+              child: Column(
+                children: <Widget>[
+                  TextFormField(
+                    controller: nameCtrl,
+                    decoration: InputDecoration(labelText: 'Nome da Exposição'),
+                  ),
+                  TextFormField(
+                    controller: thumbnailCtrl,
+                    decoration: InputDecoration(labelText: 'URL do Thumbnail'),
+                    maxLines: 2,
+                  ),
+                  TextFormField(
+                    controller: descricaoCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'Descrição da Exposição'),
+                    maxLines: 5,
+                  ),
+                  TextFormField(
+                    controller: curadorCtrl,
+                    decoration: InputDecoration(labelText: 'Curador'),
+                  ),
+                  TextFormField(
+                    controller: subtituloCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'Subtítulo da Exposição'),
+                  ),
+                  TextFormField(
+                    controller: librasCtrl,
+                    decoration: InputDecoration(labelText: 'URL de Libras'),
+                  ),
+                  TextFormField(
+                    controller: audiodescricaoCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'URL de Audiodescrição'),
+                  ),
+                  TextFormField(
+                    controller: nameEnCtrl,
+                    decoration: InputDecoration(labelText: 'Título em Inglês'),
+                  ),
+                  TextFormField(
+                    controller: descricaoEnCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'Descrição em Inglês'),
+                    maxLines: 5,
+                  ),
+                  TextFormField(
+                    controller: subtituloEnCtrl,
+                    decoration:
+                        InputDecoration(labelText: 'Subtítulo em Inglês'),
+                  ),
+                  ListTile(
+                    title: Text(dataInicio == null
+                        ? 'Selecionar Data de Início'
+                        : DateFormat('dd/MM/yyyy').format(dataInicio!)),
+                    trailing: Icon(Icons.calendar_today),
+                    onTap: () async {
+                      DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: dataInicio ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100));
+                      if (picked != null) {
+                        setState(() {
+                          dataInicio = picked;
+                        });
+                      }
+                    },
+                  ),
+                  ListTile(
+                    title: Text(dataFim == null
+                        ? 'Selecionar Data de Fim'
+                        : DateFormat('dd/MM/yyyy').format(dataFim!)),
+                    trailing: Icon(Icons.calendar_today),
+                    onTap: () async {
+                      DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: dataFim ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100));
+                      if (picked != null) {
+                        setState(() {
+                          dataFim = picked;
+                        });
+                      }
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        style: buttonStyle(Colors.deepPurpleAccent),
+                        child: Text('Salvar',
+                            style: TextStyle(color: Colors.white)),
+                        onPressed: () async {
+                          await firestore.collection(collectionName).add({
+                            'name': nameCtrl.text,
+                            'thumbnail': thumbnailCtrl.text,
+                            'descricao': descricaoCtrl.text,
+                            'curador': curadorCtrl.text,
+                            'subtitulo': subtituloCtrl.text,
+                            'url_libras': librasCtrl.text,
+                            'url_audiodescricao': audiodescricaoCtrl.text,
+                            'titulo_en': nameEnCtrl.text,
+                            'descricao_en': descricaoEnCtrl.text,
+                            'subtitulo_en': subtituloEnCtrl.text,
+                            'data_inicio': dataInicio,
+                            'data_fim': dataFim,
+                            'timestamp': DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toString(),
                           });
                           refreshData();
                           Navigator.pop(context);
@@ -291,10 +473,6 @@ class _ExposicoesPageState extends State<ExposicoesPage> {
       _lastVisible = null;
     });
     await _getData();
-  }
-
-  void openAddDialog() {
-    // Implementação do diálogo de adição
   }
 
   Widget dataList(StateModel exposicao) {

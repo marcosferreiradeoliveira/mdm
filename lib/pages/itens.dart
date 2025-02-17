@@ -9,7 +9,6 @@ import 'package:admin/utils/styles.dart';
 import 'package:admin/utils/toast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:line_icons/line_icons.dart';
 import 'package:provider/provider.dart';
 
 class ItensPage extends StatefulWidget {
@@ -71,7 +70,9 @@ class _ItensPageState extends State<ItensPage> {
             _isLoading = false;
             _hasData = true;
             _snap.addAll(data.docs);
-            _data = _snap.map((e) => Item.fromFirestore(e)).toList();
+            _data = _snap
+                .map((e) => Item.fromMap(e.data() as Map<String, dynamic>))
+                .toList();
           });
         }
       } else {
@@ -207,8 +208,12 @@ class _ItensPageState extends State<ItensPage> {
 
   void openEditDialog(Item item) {
     TextEditingController tituloCtrl = TextEditingController(text: item.titulo);
+    TextEditingController tituloEnCtrl =
+        TextEditingController(text: item.tituloEn);
     TextEditingController descricaoCtrl =
         TextEditingController(text: item.descricao);
+    TextEditingController descricaoEnCtrl =
+        TextEditingController(text: item.descricaoEn);
     TextEditingController imagemCtrl = TextEditingController(text: item.imagem);
     TextEditingController librasCtrl =
         TextEditingController(text: item.urlLibras);
@@ -236,8 +241,17 @@ class _ItensPageState extends State<ItensPage> {
                         decoration: InputDecoration(labelText: 'Título'),
                       ),
                       TextFormField(
+                        controller: tituloEnCtrl,
+                        decoration: InputDecoration(labelText: 'Título EN'),
+                      ),
+                      TextFormField(
                         controller: descricaoCtrl,
                         decoration: InputDecoration(labelText: 'Descrição'),
+                        maxLines: 3,
+                      ),
+                      TextFormField(
+                        controller: descricaoEnCtrl,
+                        decoration: InputDecoration(labelText: 'Descrição EN'),
                         maxLines: 3,
                       ),
                       TextFormField(
@@ -296,7 +310,9 @@ class _ItensPageState extends State<ItensPage> {
                                   .doc(item.timestamp)
                                   .update({
                                 'titulo': tituloCtrl.text,
+                                'titulo_en': tituloEnCtrl.text,
                                 'descricao': descricaoCtrl.text,
+                                'descricao_en': descricaoEnCtrl.text,
                                 'imagem': imagemCtrl.text,
                                 'exposicaoId': exposicaoId,
                                 'url_libras': librasCtrl.text,

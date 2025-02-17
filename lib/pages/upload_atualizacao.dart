@@ -19,8 +19,10 @@ class _UploadBlogState extends State<UploadBlog> {
 
   var formKey = GlobalKey<FormState>();
   var titleCtrl = TextEditingController();
+  var titleEnCtrl = TextEditingController();
   var imageUrlCtrl = TextEditingController();
   var descriptionCtrl = TextEditingController();
+  var descriptionEnCtrl = TextEditingController();
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool notifyUsers = true;
@@ -63,7 +65,9 @@ class _UploadBlogState extends State<UploadBlog> {
     final DocumentReference ref = firestore.collection('blogs').doc(_timestamp);
     _blogData = {
       'title': titleCtrl.text,
+      'title_en': titleEnCtrl.text,
       'description': descriptionCtrl.text,
+      'description_en': descriptionEnCtrl.text,
       'image url': imageUrlCtrl.text,
       'loves': 0,
       'date': _date,
@@ -74,7 +78,9 @@ class _UploadBlogState extends State<UploadBlog> {
 
   clearTextFields() {
     titleCtrl.clear();
+    titleEnCtrl.clear();
     descriptionCtrl.clear();
+    descriptionEnCtrl.clear();
     imageUrlCtrl.clear();
     FocusScope.of(context).unfocus();
   }
@@ -123,6 +129,18 @@ class _UploadBlogState extends State<UploadBlog> {
               ),
               TextFormField(
                 decoration: inputDecoration(
+                    'Digite o Título em Inglês', 'Título EN', titleEnCtrl),
+                controller: titleEnCtrl,
+                validator: (value) {
+                  if (value!.isEmpty) return 'O valor está vazio';
+                  return null;
+                },
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                decoration: inputDecoration(
                     'Digite a URL da Imagem', 'Imagem', imageUrlCtrl),
                 controller: imageUrlCtrl,
                 validator: (value) {
@@ -159,6 +177,41 @@ class _UploadBlogState extends State<UploadBlog> {
                 maxLines: null,
                 keyboardType: TextInputType.multiline,
                 controller: descriptionCtrl,
+                validator: (value) {
+                  if (value!.isEmpty) return 'O valor está vazio';
+                  return null;
+                },
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                decoration: InputDecoration(
+                  hintText:
+                      'Digite a Descrição em Inglês (Html ou Texto Normal)',
+                  border: OutlineInputBorder(),
+                  labelText: 'Descrição EN',
+                  contentPadding:
+                      EdgeInsets.only(right: 0, left: 10, top: 15, bottom: 5),
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CircleAvatar(
+                      radius: 15,
+                      backgroundColor: Colors.grey[300],
+                      child: IconButton(
+                        icon: Icon(Icons.close, size: 15),
+                        onPressed: () {
+                          descriptionEnCtrl.clear();
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                textAlignVertical: TextAlignVertical.top,
+                minLines: 5,
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                controller: descriptionEnCtrl,
                 validator: (value) {
                   if (value!.isEmpty) return 'O valor está vazio';
                   return null;
@@ -215,6 +268,28 @@ class _UploadBlogState extends State<UploadBlog> {
               ),
             ],
           )),
+    );
+  }
+
+  InputDecoration inputDecoration(
+      String hint, String label, TextEditingController controller) {
+    return InputDecoration(
+      hintText: hint,
+      border: OutlineInputBorder(),
+      labelText: label,
+      contentPadding: EdgeInsets.only(right: 0, left: 10, top: 15, bottom: 5),
+      suffixIcon: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: CircleAvatar(
+          radius: 15,
+          backgroundColor: Colors.grey[300],
+          child: IconButton(
+              icon: Icon(Icons.close, size: 15),
+              onPressed: () {
+                controller.clear();
+              }),
+        ),
+      ),
     );
   }
 }

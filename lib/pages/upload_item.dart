@@ -1,12 +1,13 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:admin/blocs/admin_bloc.dart';
+import 'package:admin/models/item.dart';
 import 'package:admin/utils/dialog.dart';
+import 'package:admin/widgets/cover_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class UploadItem extends StatefulWidget {
   UploadItem({Key? key}) : super(key: key);
@@ -24,7 +25,10 @@ class _UploadItemState extends State<UploadItem> {
   final String collectionName = 'Item';
 
   var tituloCtrl = TextEditingController();
+  var tituloEnCtrl = TextEditingController();
   var descricaoCtrl = TextEditingController();
+  var descricaoEnCtrl = TextEditingController();
+  var imagemUrlCtrl = TextEditingController();
   var librasCtrl = TextEditingController();
   var audiodescricaoCtrl = TextEditingController();
 
@@ -33,7 +37,6 @@ class _UploadItemState extends State<UploadItem> {
   String? _imageUrl;
   List<DropdownMenuItem<String>> exposicoesDropdownItems = [];
   String? selectedExposicaoId;
-  File? _imageFile;
 
   @override
   void initState() {
@@ -57,11 +60,13 @@ class _UploadItemState extends State<UploadItem> {
 
   clearFields() {
     tituloCtrl.clear();
+    tituloEnCtrl.clear();
     descricaoCtrl.clear();
+    descricaoEnCtrl.clear();
+    imagemUrlCtrl.clear();
     librasCtrl.clear();
     audiodescricaoCtrl.clear();
     selectedExposicaoId = null;
-    _imageFile = null;
     _imageUrl = null;
     FocusScope.of(context).unfocus();
   }
@@ -79,9 +84,6 @@ class _UploadItemState extends State<UploadItem> {
       } else {
         setState(() => uploadStarted = true);
         await getDate().then((_) async {
-          if (_imageFile != null) {
-            await uploadImageToStorage();
-          }
           await saveToDatabase().then(
               (value) => context.read<AdminBloc>().increaseCount('item_count'));
           setState(() => uploadStarted = false);
@@ -102,12 +104,6 @@ class _UploadItemState extends State<UploadItem> {
     });
   }
 
-  Future uploadImageToStorage() async {
-    final ref = storage.ref().child('items').child('$_timestamp.jpg');
-    await ref.putFile(_imageFile!);
-    _imageUrl = await ref.getDownloadURL();
-  }
-
   Future saveToDatabase() async {
     final DocumentReference ref =
         firestore.collection(collectionName).doc(_timestamp);
@@ -115,8 +111,10 @@ class _UploadItemState extends State<UploadItem> {
     var _itemData = {
       'exposicaoId': selectedExposicaoId,
       'titulo': tituloCtrl.text,
-      'imagem': _imageUrl,
+      'titulo_en': tituloEnCtrl.text,
+      'imagem': imagemUrlCtrl.text,
       'descricao': descricaoCtrl.text,
+      'descricao_en': descricaoEnCtrl.text,
       'url_libras': librasCtrl.text,
       'url_audiodescricao': audiodescricaoCtrl.text,
       'timestamp': _timestamp,
@@ -124,16 +122,6 @@ class _UploadItemState extends State<UploadItem> {
     };
 
     await ref.set(_itemData);
-  }
-
-  Future pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    setState(() {
-      if (pickedFile != null) {
-        _imageFile = File(pickedFile.path);
-      }
-    });
   }
 
   @override
@@ -172,19 +160,26 @@ class _UploadItemState extends State<UploadItem> {
               SizedBox(
                 height: 20,
               ),
-              GestureDetector(
-                onTap: pickImage,
-                child: Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    border: Border.all(color: Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: _imageFile == null
-                      ? Center(child: Text('Selecionar Imagem'))
-                      : Image.file(_imageFile!, fit: BoxFit.cover),
-                ),
+              TextFormField(
+                decoration: inputDecoration(
+                    'Título do Item em Inglês', 'Título EN', tituloEnCtrl),
+                controller: tituloEnCtrl,
+                validator: (value) {
+                  if (value!.isEmpty) return 'Campo está vazio';
+                  return null;
+                },
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                decoration:
+                    inputDecoration('URL da Imagem', 'Imagem', imagemUrlCtrl),
+                controller: imagemUrlCtrl,
+                validator: (value) {
+                  if (value!.isEmpty) return 'Campo está vazio';
+                  return null;
+                },
               ),
               SizedBox(
                 height: 20,
@@ -213,6 +208,38 @@ class _UploadItemState extends State<UploadItem> {
                 maxLines: null,
                 keyboardType: TextInputType.multiline,
                 controller: descricaoCtrl,
+                validator: (value) {
+                  if (value!.isEmpty) return 'Campo está vazio';
+                  return null;
+                },
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextFormField(
+                decoration: InputDecoration(
+                    hintText: 'Descrição do Item em Inglês',
+                    border: OutlineInputBorder(),
+                    labelText: 'Descrição EN',
+                    contentPadding:
+                        EdgeInsets.only(right: 0, left: 10, top: 15, bottom: 5),
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CircleAvatar(
+                        radius: 15,
+                        backgroundColor: Colors.grey[300],
+                        child: IconButton(
+                            icon: Icon(Icons.close, size: 15),
+                            onPressed: () {
+                              descricaoEnCtrl.clear();
+                            }),
+                      ),
+                    )),
+                textAlignVertical: TextAlignVertical.top,
+                minLines: 5,
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+                controller: descricaoEnCtrl,
                 validator: (value) {
                   if (value!.isEmpty) return 'Campo está vazio';
                   return null;

@@ -1,6 +1,5 @@
 import 'package:admin/blocs/admin_bloc.dart';
-import 'package:admin/models/blog.dart';
-import 'package:admin/pages/comments.dart';
+import 'package:admin/models/atualizacao.dart';
 import 'package:admin/pages/update_atualizacao.dart';
 import 'package:admin/utils/cached_image.dart';
 import 'package:admin/utils/dialog.dart';
@@ -11,7 +10,6 @@ import 'package:admin/utils/toast.dart';
 import 'package:admin/widgets/blog_preview.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
