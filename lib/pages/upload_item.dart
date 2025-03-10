@@ -1,8 +1,5 @@
-import 'dart:typed_data';
 import 'package:admin/blocs/admin_bloc.dart';
-import 'package:admin/models/item.dart';
 import 'package:admin/utils/dialog.dart';
-import 'package:admin/widgets/cover_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';

@@ -7,23 +7,52 @@ import 'package:provider/provider.dart';
 import 'blocs/admin_bloc.dart';
 import 'blocs/comment_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'firebase_options.dart';
+
+Future<void> initializeFirebase() async {
+  try {
+    // Load .env file only for non-web platforms
+    if (!kIsWeb) {
+      await dotenv.load(fileName: "assets/.env");
+    }
+
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    print('Firebase initialized successfully');
+  } catch (e) {
+    print('Error initializing Firebase: $e');
+    rethrow;
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(
-    options: FirebaseOptions(
-      apiKey: dotenv.env['FIREBASE_API_KEY']!,
-      authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN']!,
-      projectId: dotenv.env['FIREBASE_PROJECT_ID']!,
-      storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET']!,
-      messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID']!,
-      appId: dotenv.env['FIREBASE_APP_ID']!,
-      measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID'],
-    ),
-  );
-  runApp(MyApp());
+
+  try {
+    await initializeFirebase();
+    runApp(const MyApp());
+  } catch (e) {
+    print('Failed to initialize app: $e');
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text(
+              'Error initializing app: $e',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -35,8 +64,6 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AdminBloc>(create: (context) => AdminBloc()),
         ChangeNotifierProvider<CommentBloc>(create: (context) => CommentBloc()),
-        // ChangeNotifierProvider<NotificationBloc>(
-        //     create: (context) => NotificationBloc())
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -46,18 +73,20 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
           textTheme: GoogleFonts.poppinsTextTheme(),
           appBarTheme: AppBarTheme(
-              color: Colors.white,
-              titleTextStyle: GoogleFonts.poppins(
-                  color: Colors.grey[900],
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18),
-              elevation: 0,
-              actionsIconTheme: IconThemeData(
-                color: Colors.grey[900],
-              ),
-              iconTheme: IconThemeData(color: Colors.grey[900])),
+            color: Colors.white,
+            titleTextStyle: GoogleFonts.poppins(
+              color: Colors.grey[900],
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+            ),
+            elevation: 0,
+            actionsIconTheme: IconThemeData(
+              color: Colors.grey[900],
+            ),
+            iconTheme: IconThemeData(color: Colors.grey[900]),
+          ),
         ),
-        home: MyApp1(),
+        home: const MyApp1(),
       ),
     );
   }
@@ -74,11 +103,9 @@ class MyApp1 extends StatelessWidget {
 }
 
 class TouchAndMouseScrollBehavior extends MaterialScrollBehavior {
-  // Override behavior methods and getters like dragDevices
   @override
   Set<PointerDeviceKind> get dragDevices => {
         PointerDeviceKind.touch,
         PointerDeviceKind.mouse,
-        // etc.
       };
 }

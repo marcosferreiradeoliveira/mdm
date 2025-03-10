@@ -9,6 +9,8 @@
 .history
 .svn/
 .env
+functions/.env*
+lib/firebase_options.dart
 
 # IntelliJ related
 *.iml
@@ -42,3 +44,25 @@ app.*.map.json
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Arquivos de ambiente
+.env
+.env.*
+
+# Arquivos do Firebase
+lib/firebase_options.dart
+
+# Arquivos do Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+*.lock
+
+# IDEs e editores
+.idea/
+.vscode/
+*.iml
+*.iws
+.DS_Store

@@ -1,0 +1,1 @@
+// Este arquivo pode ser usado para outras funções do Firebase no futuro
