@@ -18,10 +18,8 @@ lib/firebase_options.dart
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code related
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -35,12 +33,28 @@ lib/firebase_options.dart
 /build/
 
 # Web related
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+
+# Firebase related
+.firebase/
+firebase-debug.log*
+firebase-debug.*.log*
 
 # Symbolication related
 app.*.symbols
 
 # Obfuscation related
 app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
