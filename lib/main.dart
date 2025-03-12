@@ -7,8 +7,6 @@ import 'package:provider/provider.dart';
 import 'blocs/admin_bloc.dart';
 import 'blocs/comment_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'firebase_options.dart';

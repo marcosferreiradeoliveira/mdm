@@ -6,6 +6,11 @@ import 'package:admin/widgets/cover_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:typed_data';
 
 class UpdateBlog extends StatefulWidget {
   final Blog blogData;
@@ -17,6 +22,8 @@ class UpdateBlog extends StatefulWidget {
 
 class _UpdateBlogState extends State<UpdateBlog> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final FirebaseStorage storage = FirebaseStorage.instance;
+  final ImagePicker _picker = ImagePicker();
 
   var formKey = GlobalKey<FormState>();
   var titleCtrl = TextEditingController();
@@ -26,7 +33,56 @@ class _UpdateBlogState extends State<UpdateBlog> {
   var descriptionEnCtrl = TextEditingController();
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
-  bool uploadStarted = false;
+  bool isUploading = false;
+  XFile? _imageFile;
+  Uint8List? _webImage;
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        if (kIsWeb) {
+          var bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _webImage = bytes;
+            _imageFile = pickedFile;
+          });
+        } else {
+          setState(() {
+            _imageFile = pickedFile;
+          });
+        }
+      }
+    } catch (e) {
+      print('Erro ao selecionar imagem: $e');
+    }
+  }
+
+  Future<String?> _uploadImage() async {
+    if (_imageFile == null && _webImage == null) return null;
+
+    try {
+      final String fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${_imageFile!.name}';
+      final Reference ref = storage.ref().child('blogs/$fileName');
+
+      UploadTask uploadTask;
+      if (kIsWeb) {
+        uploadTask = ref.putData(_webImage!);
+      } else {
+        uploadTask = ref.putFile(File(_imageFile!.path));
+      }
+
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Erro ao fazer upload da imagem: $e');
+      return null;
+    }
+  }
 
   void handleSubmit() async {
     final AdminBloc ab = Provider.of<AdminBloc>(context, listen: false);
@@ -36,9 +92,18 @@ class _UpdateBlogState extends State<UpdateBlog> {
         openDialog(context, 'Você é um Testador',
             'Somente Admin pode fazer upload, deletar e modificar conteúdos');
       } else {
-        setState(() => uploadStarted = true);
+        setState(() => isUploading = true);
+
+        String? imageUrl;
+        if (_imageFile != null || _webImage != null) {
+          imageUrl = await _uploadImage();
+          if (imageUrl != null) {
+            imageUrlCtrl.text = imageUrl;
+          }
+        }
+
         await updateDatabase();
-        setState(() => uploadStarted = false);
+        setState(() => isUploading = false);
         openDialog(context, 'Atualizado com Sucesso', '');
       }
     }
@@ -63,6 +128,10 @@ class _UpdateBlogState extends State<UpdateBlog> {
     descriptionCtrl.clear();
     descriptionEnCtrl.clear();
     imageUrlCtrl.clear();
+    setState(() {
+      _imageFile = null;
+      _webImage = null;
+    });
     FocusScope.of(context).unfocus();
   }
 
@@ -142,14 +211,59 @@ class _UpdateBlogState extends State<UpdateBlog> {
                   SizedBox(
                     height: 20,
                   ),
-                  TextFormField(
-                    decoration: inputDecoration(
-                        'Digite a URL da Imagem', 'Imagem', imageUrlCtrl),
-                    controller: imageUrlCtrl,
-                    validator: (value) {
-                      if (value!.isEmpty) return 'O valor está vazio';
-                      return null;
-                    },
+                  Column(
+                    children: [
+                      Container(
+                        height: 200,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: _imageFile != null || _webImage != null
+                            ? kIsWeb
+                                ? Image.memory(_webImage!, fit: BoxFit.cover)
+                                : Image.file(File(_imageFile!.path),
+                                    fit: BoxFit.cover)
+                            : imageUrlCtrl.text.isNotEmpty
+                                ? Image.network(imageUrlCtrl.text,
+                                    fit: BoxFit.cover)
+                                : Center(
+                                    child: Text('Nenhuma imagem selecionada'),
+                                  ),
+                      ),
+                      SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _pickImage,
+                            icon: Icon(Icons.image),
+                            label: Text('Selecionar Imagem'),
+                          ),
+                          if (_imageFile != null ||
+                              _webImage != null ||
+                              imageUrlCtrl.text.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 10),
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _imageFile = null;
+                                    _webImage = null;
+                                    imageUrlCtrl.clear();
+                                  });
+                                },
+                                icon: Icon(Icons.delete),
+                                label: Text('Remover Imagem'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
                   SizedBox(
                     height: 20,
@@ -249,12 +363,15 @@ class _UpdateBlogState extends State<UpdateBlog> {
                   Container(
                       color: Colors.deepPurpleAccent,
                       height: 45,
-                      child: uploadStarted == true
+                      child: isUploading
                           ? Center(
                               child: Container(
                                   height: 30,
                                   width: 30,
-                                  child: CircularProgressIndicator()),
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  )),
                             )
                           : TextButton(
                               child: Text(

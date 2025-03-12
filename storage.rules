@@ -5,14 +5,31 @@ rules_version = '2';
 //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
+    match /items/{imageId} {
       // Permite leitura pública para todos
       allow read: if true;
-      // Permite escrita apenas para usuários autenticados
-      allow write: if request.auth != null;
       
-      // Permitir acesso aos metadados
-      allow get, list: if true;
+      // Permite upload com validações de segurança básicas
+      allow write: if 
+        request.resource.size < 5 * 1024 * 1024  // Máximo 5MB
+        && request.resource.contentType.matches('image/.*')  // Apenas imagens
+        && imageId.size() < 100;  // Nome do arquivo não muito longo
+    }
+
+    match /blogs/{imageId} {
+      // Permite leitura pública para todos
+      allow read: if true;
+      
+      // Permite upload com validações de segurança básicas
+      allow write: if 
+        request.resource.size < 5 * 1024 * 1024  // Máximo 5MB
+        && request.resource.contentType.matches('image/.*')  // Apenas imagens
+        && imageId.size() < 100;  // Nome do arquivo não muito longo
+    }
+
+    // Regras padrão para outros caminhos
+    match /{allPaths=**} {
+      allow read, write: if true;  // Acesso público para leitura e escrita
     }
   }
 }
