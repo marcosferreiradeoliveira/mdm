@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 
 class UpdateItem extends StatefulWidget {
   final Item itemData;
@@ -36,8 +37,11 @@ class _UpdateItemState extends State<UpdateItem> {
   var audiodescricaoCtrl = TextEditingController();
 
   bool isUploading = false;
+  bool isUploadingAudio = false;
   XFile? _imageFile;
   Uint8List? _webImage;
+  XFile? _audioFile;
+  double _uploadProgress = 0;
 
   Future<void> _pickImage() async {
     try {
@@ -82,6 +86,91 @@ class _UpdateItemState extends State<UpdateItem> {
       return downloadUrl;
     } catch (e) {
       print('Erro ao fazer upload da imagem: $e');
+      return null;
+    }
+  }
+
+  Future<void> _pickAudioFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['mp3'],
+        allowMultiple: false,
+      );
+
+      if (result != null) {
+        PlatformFile file = result.files.first;
+
+        if (file.size > 20 * 1024 * 1024) {
+          // 20MB limit
+          throw Exception('O arquivo é muito grande. O tamanho máximo é 20MB.');
+        }
+
+        if (kIsWeb) {
+          setState(() {
+            _audioFile = XFile.fromData(
+              result.files.first.bytes!,
+              name: result.files.first.name,
+            );
+          });
+        } else {
+          setState(() {
+            _audioFile = XFile(result.files.single.path!);
+          });
+        }
+      }
+    } catch (e) {
+      print('Erro ao selecionar arquivo de áudio: $e');
+      openDialog(context, 'Erro', e.toString());
+    }
+  }
+
+  Future<String?> _uploadAudioFile() async {
+    if (_audioFile == null) return null;
+
+    try {
+      final String fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${_audioFile!.name}';
+      final Reference ref = storage.ref().child('audiodescricao/$fileName');
+
+      UploadTask uploadTask;
+      if (kIsWeb) {
+        final bytes = await _audioFile!.readAsBytes();
+        uploadTask = ref.putData(
+          bytes,
+          SettableMetadata(
+            contentType: 'audio/mpeg',
+            customMetadata: {
+              'fileName': _audioFile!.name,
+              'uploadedAt': DateTime.now().toString(),
+            },
+          ),
+        );
+      } else {
+        uploadTask = ref.putFile(
+          File(_audioFile!.path),
+          SettableMetadata(
+            contentType: 'audio/mpeg',
+            customMetadata: {
+              'fileName': _audioFile!.name,
+              'uploadedAt': DateTime.now().toString(),
+            },
+          ),
+        );
+      }
+
+      // Monitor upload progress
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        setState(() {
+          _uploadProgress = snapshot.bytesTransferred / snapshot.totalBytes;
+        });
+      });
+
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('Erro ao fazer upload do arquivo de áudio: $e');
       return null;
     }
   }
@@ -502,13 +591,148 @@ class _UpdateItemState extends State<UpdateItem> {
                 },
               ),
               SizedBox(height: 20),
-              TextFormField(
-                decoration: inputDecoration('URL de Audiodescrição',
-                    'Audiodescrição', audiodescricaoCtrl),
-                controller: audiodescricaoCtrl,
-                validator: (value) {
-                  return null;
-                },
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Audiodescrição (MP3)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (audiodescricaoCtrl.text.isNotEmpty) ...[
+                          Row(
+                            children: [
+                              Icon(Icons.audiotrack,
+                                  color: Colors.deepPurpleAccent),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Arquivo de áudio atual',
+                                      style: TextStyle(
+                                        color: Colors.grey[700],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      audiodescricaoCtrl.text.split('/').last,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.close, color: Colors.red),
+                                onPressed: () {
+                                  setState(() {
+                                    audiodescricaoCtrl.clear();
+                                    _audioFile = null;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ] else
+                          Text(
+                            'Nenhum arquivo de áudio selecionado',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        if (isUploadingAudio) ...[
+                          SizedBox(height: 10),
+                          Column(
+                            children: [
+                              LinearProgressIndicator(
+                                value: _uploadProgress,
+                                backgroundColor: Colors.grey[200],
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.deepPurpleAccent,
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Enviando: ${(_uploadProgress * 100).toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: isUploadingAudio
+                          ? null
+                          : () async {
+                              await _pickAudioFile();
+                              if (_audioFile != null) {
+                                setState(() {
+                                  isUploadingAudio = true;
+                                  _uploadProgress = 0;
+                                });
+
+                                String? audioUrl = await _uploadAudioFile();
+
+                                if (audioUrl != null) {
+                                  setState(() {
+                                    audiodescricaoCtrl.text = audioUrl;
+                                    isUploadingAudio = false;
+                                    _audioFile = null;
+                                    _uploadProgress = 0;
+                                  });
+                                } else {
+                                  setState(() {
+                                    isUploadingAudio = false;
+                                    _uploadProgress = 0;
+                                  });
+                                  openDialog(context, 'Erro',
+                                      'Falha ao fazer upload do arquivo de áudio');
+                                }
+                              }
+                            },
+                      icon: Icon(isUploadingAudio
+                          ? Icons.hourglass_empty
+                          : Icons.upload_file),
+                      label: Text(isUploadingAudio
+                          ? 'Enviando...'
+                          : audiodescricaoCtrl.text.isNotEmpty
+                              ? 'Alterar Arquivo de Áudio'
+                              : 'Selecionar Arquivo de Áudio'),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: Colors.deepPurpleAccent,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey[300],
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 50),
               Container(
